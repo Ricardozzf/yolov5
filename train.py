@@ -288,7 +288,7 @@ def train(hyp):
                 res = plot_images(images=imgs, targets=targets, paths=paths, fname=f)
                 if tb_writer:
                     tb_writer.add_image(f, res, dataformats='HWC', global_step=epoch)
-                    # tb_writer.add_graph(model, imgs)  # add model to tensorboard
+                    tb_writer.add_graph(model, imgs)  # add model to tensorboard
 
             # end batch ------------------------------------------------------------------------------------------------
 
