@@ -23,7 +23,7 @@ if __name__ == '__main__':
     img = torch.zeros((opt.batch_size, 3, *opt.img_size))  # image size, (1, 3, 320, 192) iDetection
 
     # Load pytorch model
-    google_utils.attempt_download(opt.weights)
+    #google_utils.attempt_download(opt.weights)
     model = torch.load(opt.weights, map_location=torch.device('cpu'))['model'].float()
     model.eval()
     model.fuse()
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     # Export to onnx
     model.model[-1].export = True  # set Detect() layer export=True
     _ = model(img)  # dry run
-    torch.onnx.export(model, img, f, verbose=False, opset_version=11, input_names=['images'],
+    torch.onnx.export(model, img, f, verbose=False, opset_version=9, input_names=['images'],
                       output_names=['output'])  # output_names=['classes', 'boxes']
 
     # Check onnx model

@@ -54,6 +54,19 @@ def detect(save_img=False):
     img = torch.zeros((1, 3, imgsz, imgsz), device=device)  # init img
     _ = model(img.half() if half else img) if device.type != 'cpu' else None  # run once
     for path, img, im0s, vid_cap in dataset:
+
+        h, w = img.shape[-2:]
+        ratio = 800 / max(h, w)
+        if h > w:
+            rs = [int(w*ratio), 800]
+        else:
+            rs = [800, int(h*ratio)]
+        img = img.transpose((1,2,0))
+        pad_w, pad_h = 800-rs[0], 800-rs[1]
+        img = cv2.resize(img, tuple(rs), interpolation=cv2.INTER_LINEAR)
+        img = cv2.copyMakeBorder(img, 0, pad_h, 0, pad_w, cv2.BORDER_CONSTANT, value=0)
+        im = img.copy()
+        img = img.transpose((2,0,1))
         img = torch.from_numpy(img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
@@ -66,6 +79,16 @@ def detect(save_img=False):
 
         # Apply NMS
         pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
+        
+        for i in range(pred[0].shape[0]):
+            x1 = int(pred[0][i,0].item())
+            y1 = int(pred[0][i,1].item())
+            x2 = int(pred[0][i,2].item())
+            y2 = int(pred[0][i,3].item())
+            im = cv2.rectangle(im, (x1, y1),(x2,y2), (0,0,255), 2)
+        
+        import pdb; pdb.set_trace()
+            
         t2 = torch_utils.time_synchronized()
 
         # Apply Classifier
